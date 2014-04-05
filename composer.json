@@ -20,7 +20,8 @@
 		"source": "https://github.com/tatarko/dibi-active-record"
 	},
 	"require": {
-		"php": ">=5.3"
+		"php": ">=5.3",
+		"dibi/dibi": "dev-master"
 	},
 	"autoload": {
 		"psr-4": {
