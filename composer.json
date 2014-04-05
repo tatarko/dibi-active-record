@@ -1,15 +1,15 @@
 {
 	"name": "tatarko/dibi-active-record",
 	"description": "Active Record built upon dibi Database Abstraction Library",
-	"version": "1.0",
+	"version": "1.0.0",
 	"keywords": ["php", "dibi", "active", "record"],
-	"homepage": "http://www.codeforbetterlife.com/",
+	"homepage": "http://www.codeforbetterlife.com",
 	"license": "MIT",
 	"authors": [
 		{
 			"name": "Tomas Tatarko",
 			"email": "tomas.tatarko@websupport.sk",
-			"homepage": "http://tatarko.sk/",
+			"homepage": "http://tatarko.sk",
 			"role": "Developer"
 		}
 	],
