@@ -15,7 +15,6 @@
 	"support": {
 		"email": "tomas@tatarko.sk",
 		"issues": "https://github.com/tatarko/dibi-active-record/issues",
-		"wiki": "https://github.com/tatarko/dibi-active-record/wiki",
 		"source": "https://github.com/tatarko/dibi-active-record"
 	},
 	"require": {
