@@ -1,459 +1,288 @@
 <?php
 
-namespace DibiActiveRecord;
+/**
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * PHP Version 5.3
+ *
+ * @category ORM
+ * @package  DibiActiveRecord
+ * @author   Tomáš Tatarko <tomas@tatarko.sk>
+ * @license  http://choosealicense.com/licenses/mit/ MIT
+ * @link     https://github.com/tatarko/dibi-active-record Official repository
+ */
+
+namespace Tatarko\DibiActiveRecord;
 
 require_once __DIR__ . '/interfaces.php';
 
 /**
  * ActiveRecord built above dibi
  *
- * @author Tomas Tatarko <tomas.tatarko@websupport.sk>
- * @package DibiActiveRecord
- * @copyright Copyright 2014 Tomas Tatarko
- * @license http://choosealicense.com/licenses/mit/ The MIT License
- * @version 1.0
- * @since 1.0
+ * @category  ORM
+ * @package   DibiActiveRecord
+ * @author    Tomas Tatarko <tomas@tatarko.sk>
+ * @copyright 2014 Tomas Tatarko
+ * @license   http://choosealicense.com/licenses/mit/ The MIT License
+ * @link      https://github.com/tatarko/dibi-active-record Official repository
  */
-abstract class ActiveRecord extends \ArrayObject {
+abstract class ActiveRecord extends ActiveView
+{
+    /**
+     * List of errors made by validation
+     * @var string[]
+     */
+    protected $errors = array();
 
-	/**
-	 * Name of the primary key field
-	 * @var string
-	 */
-	protected $primaryKey = 'id';
+    /**
+     * Is the record new?
+     * @return boolean
+     */
+    public function isNewRecord() 
+    {
+        $pk = $this->primaryKeyName();
+        return !$this->offsetExists($pk) || empty($this[$pk]);
+    }
 
-	/**
-	 * Name of the active dibi connection
-	 * @var string
-	 */
-	protected $connection;
+    /**
+     * Saves record
+     * @param boolean $validate Validates model before saving?
+     * @return boolean
+     */
+    public function save($validate = true)
+    {
+        if ($validate && !$this->validate()) {
+            return false;
+        }
 
-	/**
-	 * List of errors made by validation
-	 * @var string[]
-	 */
-	protected $errors = array();
+        if ($this->beforeSave() === false) {
+            return false;
+        }
 
-	/**
-	 * Stack of filters to use on setting/getting values
-	 * @var Filter[]
-	 */
-	private $_filters;
+        if ($this->isNewRecord()) {
+            $result = $this->insert();
+        } else {
+            $result = $this->update();
+        }
 
-	/**
-	 * Stack of validators used to validate model
-	 * @var Validator[]
-	 */
-	private $_validators;
+        if ($result) {
+            $this->afterSave();
+            return true;
+        }
 
-	/**
-	 * Criteria for selecting records from database
-	 * @var Criteria
-	 */
-	private $_criteria;
+        return false;
+    }
 
-	/**
-	 * Gets table name
-	 * @return string
-	 */
-	public function tableName() {
-		$classVector = explode('\\', get_called_class());
-		return end($classVector);
-	}
+    /**
+     * Inserts new record to the database
+     * @return boolean
+     */
+    protected function insert() 
+    {
+        $query = $this->getConnection()->query(
+            'INSERT INTO %n',
+            $this->tableName(),
+            $this->getArrayCopy()
+        );
 
-	/**
-	 * Gets model of the active record
-	 * @return ActiveRecord
-	 */
-	public static function model() {
-		$class = get_called_class();
-		return new $class(array());
-	}
+        if (!is_int($query) || empty($query)) {
+            return false;
+        }
 
-	/**
-	 * Constructs new active record
-	 * @param array $array Default attributes for that record
-	 */
-	public function __construct(array $array = array()) {
-		parent::__construct($array);
-	}
+        $this->refresh($this->getConnection()->insertId());
+        return true;
+    }
 
-	/**
-	 * Gets connection to database
-	 * @return \DibiConnection
-	 */
-	public function getConnection() {
-		return \dibi::getConnection($this->connection);
-	}
+    /**
+     * Updates record in the database
+     * @return boolean
+     */
+    protected function update() 
+    {
+        return is_int(
+            $this->getConnection()->query(
+                'UPDATE %n',
+                $this->tableName(),
+                ' SET %a ',
+                $this->getArrayCopy(),
+                ' WHERE %n = %i',
+                $this->primaryKeyName(),
+                $this->{$this->primaryKeyName()}
+            )
+        );
+    }
 
-	/**
-	 * Gets selecting criteria for current active record model
-	 * @return Criteria
-	 */
-	public function getCriteria() {
-		if($this->_criteria) {
-			return $this->_criteria;
-		}
-		return $this->_criteria = new Criteria($this);
-	}
+    /**
+     * Deletes record from the database
+     * @return boolean
+     * @throws Exception
+     */
+    public function delete()
+    {
+        if ($this->isNewRecord()) {
+            throw new Exception('Unable to delete new record');
+        }
 
-	/**
-	 * Sets criteria for selecting records from database
-	 * @param Criteria $criteria Instance of criteria object
-	 */
-	public function setCriteria(Criteria $criteria) {
-		$this->_criteria = $criteria;
-	}
+        if ($this->beforeDelete() === false) {
+            return false;
+        }
 
-	/**
-	 * Requests data from database
-	 * @param Criteria $criteria
-	 * @return ActiveRecord[] List of active records fetched from database
-	 */
-	protected function requestData(Criteria $criteria = null) {
-		$criteria = $criteria ?: $this->getCriteria();
-		return call_user_func_array(
-			array(
-				$this->getConnection(),
-				'query'
-			),
-			$criteria->build($this->tableName())
-		)->setRowClass(get_called_class());
-	}
+        if (is_int(
+            $this->getConnection()->query(
+                'DELETE FROM %n WHERE %n = %i',
+                $this->tableName(),
+                $this->primaryKeyName(),
+                $this->{$this->primaryKeyName()}
+            )
+        )) {
+            $this->afterDelete();
+            return true;
+        }
 
-	/**
-	 * Finds active record by primary key value
-	 * @param integer $id
-	 * @return ActiveRecord
-	 */
-	public function findByPk($id) {
-		return $this->requestData(
-			$this->getCriteria()->compare($this->primaryKey, $id)
-		)->fetch();
-	}
+        return false;
+    }
 
-	/**
-	 * Finds all records matching given criteria
-	 * @param Criteria $criteria
-	 * @return ActiveRecord[]
-	 */
-	public function findAll(Criteria $criteria = null) {
-		return $this->requestData($criteria
-			? $this->getCriteria()->mergeWith($criteria)
-			: $this->getCriteria()
-		);
-	}
+    /**
+     * Gets list of validators meta data
+     * @return array
+     */
+    public function validators() 
+    {
+        return array();
+    }
 
-	/**
-	 * Finds all records matching given criteria
-	 * @param Criteria $criteria
-	 * @return ActiveRecord[]
-	 */
-	public function find() {
-		return $this->requestData($this->getCriteria()->limit(1))->fetch();
-	}
+    /**
+     * Builds filter instances from meta data returned from `validators()` method
+     * @return Validator[]
+     */
+    protected function prepareValidators()
+    {
+        $validators = array();
 
-	/**
-	 * Is the record new?
-	 * @return boolean
-	 */
-	public function isNewRecord() {
-		return !$this->offsetExists($this->primaryKey) || empty($this[$this->primaryKey]);
-	}
+        foreach ($this->validators() as $settings) {
+            list($fields, $validator) = $settings;
+            unset($settings[0], $settings[1]);
 
-	/**
-	 * Saves record
-	 * @return boolean
-	 */
-	public function save($validate = true) {
-		if($validate && !$this->validate()) {
-			return false;
-		}
+            if (is_callable($validator)) {
+                $validator = new validator\Callback($validator);
+            }
 
-		if($this->isNewRecord()) {
-			return $this->insert();
-		}
+            if (!$validator instanceof Validator) {
+                $name = sprintf(
+                    __NAMESPACE__.'\\Validator\\%s',
+                    ucfirst($validator)
+                );
+                $validator = new $name;
+                $validator->setSettings($settings);
+            }
 
-		return $this->update();
-	}
+            foreach (explode(',', $fields) as $field) {
+                $validators[trim($field)][$validator->getId()] = $validator;
+            }
+        }
 
-	/**
-	 * Inserts new record to the database
-	 * @return boolean
-	 */
-	protected function insert() {
-		$query = $this->getConnection()->query('INSERT INTO %n', $this->tableName(), $this->getArrayCopy());
+        return $validators;
+    }
 
-		if(!is_int($query) || empty($query)) {
-			return false;
-		}
+    /**
+     * Validates model
+     * @return boolean
+     */
+    public function validate()
+    {
+        $this->errors = array();
 
-		$this->refresh($this->getConnection()->insertId());
-		return true;
-	}
+        if ($this->beforeValidate() === false) {
+            return false;
+        }
 
-	/**
-	 * Updates record in the database
-	 * @return boolean
-	 */
-	protected function update() {
-		return is_int($this->getConnection()->query(
-			'UPDATE %n',
-			$this->tableName(),
-			' SET %a ',
-			$this->getArrayCopy(),
-			' WHERE %n = %i',
-			$this->primaryKey,
-			$this->{$this->primaryKey}
-		));
-	}
+        foreach ($this->prepareValidators() as $field => $validators) {
+            $value = isset($this[$field]) ? $this[$field] : null;
+            foreach ($validators as $validator) {
+                $validator->setValue($value);
+                if (!$validator->isValid()) {
+                    $this->errors[$field] = array_merge(
+                        isset($this->errors[$field])
+                        ? $this->errors[$field] : array(),
+                        str_replace('{name}', $field, $validator->getErrors())
+                    );
+                }
+            }
+        }
 
-	/**
-	 * Refresh variables to actual data from the database
-	 * @param integer $id Reference ID
-	 * @return ActiveRecord
-	 */
-	public function refresh($id = null) {
-		$this->exchangeArray(
-			$this->requestData(
-				$this->getCriteria()->compare($this->primaryKey, $id ?: $this->{$this->primaryKey})
-			)->fetch()->getArrayCopy()
-		);
-		return $this;
-	}
+        $this->afterValidate();
+        return empty($this->errors);
+    }
 
-	/**
-	 * Deletes record from the database
-	 * @return boolean
-	 * @throws ARException
-	 */
-	public function delete() {
-		if($this->isNewRecord()) {
-			throw new ARException('Unable to delete new record');
-		}
+    /**
+     * Adds custom error to specific attribute
+     * @param string $attribute Attribute name to add error for
+     * @param string $message   Error's message
+     * @return void
+     */
+    public function addError($attribute, $message)
+    {
+        $this->errors[$attribute][] = $message;
+    }
 
-		return is_int(
-			$this->connection->query(
-				'DELETE FROM %n WHERE %n = %i',
-				$this->tableName(),
-				$this->primaryKey,
-				$this->{$this->primaryKey}
-			)
-		);
-	}
+    /**
+     * List of errors made by validation
+     * @return string[][]
+     */
+    public function getErrors() 
+    {
+        return $this->errors;
+    }
 
-	/**
-	 * Ziska attributy modely
-	 * @param array $names Filtrovanie len specifickych attributov
-	 * @return array
-	 */
-	public function getAttributes(array $names = array()) {
-		foreach(array_keys($this->getArrayCopy()) as $name) {
-			if(empty($names) || in_array($name, $names)) {
-				$return[$name] = $this->getAttribute($name);
-			}
-		}
-		return $return;
-	}
+    /**
+     * Method triggered before saving an active record to the database.
+     * @return mixed If this method returns `FALSE`, saving is interrupted
+     */
+    public function beforeSave()
+    {
+        return true;
+    }
 
-	/**
-	 * Nahradi hodnoty attributov
-	 * @param array $attributes Nove hodnoty attributov
-	 */
-	public function setAttributes(array $attributes) {
-		foreach($attributes as $name => $value) {
-			$this->setAttribute($name, $value);
-		}
-	}
+    /**
+     * Method triggered after an active record is successfully saved to the database
+     * @return void
+     */
+    public function afterSave()
+    {
+    }
 
-	/**
-	 * Sets new attribute value
-	 * @param string $name Attribute to set
-	 * @param mixed $value Value to set
-	 */
-	public function setAttribute($name, $value) {
-		$this->prepareFilters()->offsetSet($name, isset($this->_filters[$name])
-			? $this->_filters[$name]->input($value)
-			: $value
-		);
-	}
+    /**
+     * Method triggered before validating an active record
+     * @return mixed If this method returns `FALSE`, validation is interrupted
+     */
+    public function beforeValidate()
+    {
+        return true;
+    }
 
-	/**
-	 * Gets new attribute value
-	 * @param string $name Attribute to get
-	 * @return mixed Attribute value
-	 */
-	public function getAttribute($name) {
-		$this->prepareFilters();
-		$value = $this->offsetGet($name);
-		return isset($this->_filters[$name])
-			? $this->_filters[$name]->output($value)
-			: $value;
-	}
+    /**
+     * Method triggered after validation of an active record is completed
+     * @return void
+     */
+    public function afterValidate()
+    {
+    }
 
-	/**
-	 * Magic method for accessing properties of an object
-	 * @param string $name Property name
-	 * @param mixed $value Property value
-	 */
-	public function __set($name, $value) {
-		$this->setAttribute($name, $value);
-	}
+    /**
+     * Method triggered before deleting an active record from the database.
+     * @return mixed If this method returns `FALSE`, deleting is interrupted
+     */
+    public function beforeDelete()
+    {
+        return true;
+    }
 
-	/**
-	 * Magic method for accessing properties of an object
-	 * @param string $name Property name
-	 * @return mixed Property value
-	 */
-	public function __get($name) {
-		return $this->getAttribute($name);
-	}
-
-	/**
-	 * Gets list of filters meta data
-	 * @return array
-	 */
-	public function filters() {
-		return array();
-	}
-
-	/**
-	 * Gets list of validators meta data
-	 * @return array
-	 */
-	public function validators() {
-		return array();
-	}
-
-	/**
-	 * Builds filter instances from meta data returned from `filters()` method
-	 * @return ActiveRecord Supports method chaining
-	 */
-	protected function prepareFilters() {
-		if($this->_filters !== null) {
-			return $this;
-		}
-
-		$this->_filters = array();
-		foreach($this->filters() as $settings) {
-			list($fields, $filter) = $settings;
-			unset($settings[0], $settings[1]);
-
-			if(!$filter instanceof Filter) {
-				$name = sprintf('\\DibiActiveRecord\\Filter\\%s', ucfirst($filter));
-				$filter = new $name;
-				$filter->setSettings($settings);
-			}
-
-			foreach(explode(',', $fields) as $field) {
-				$this->setFilter(trim($field), $filter);
-			}
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Sets filter to requested column
-	 * @param string $column Column name to set filter on
-	 * @param Filter $filter Instance of filter
-	 */
-	public function setFilter($column, Filter $filter) {
-		$this->_filters[$column] = $filter;
-	}
-
-	/**
-	 * Builds filter instances from meta data returned from `filters()` method
-	 * @return ActiveRecord Supports method chaining
-	 */
-	protected function prepareValidators() {
-		if($this->_validators !== null) {
-			return $this;
-		}
-
-		$this->_validators = array();
-		foreach($this->validators() as $settings) {
-			list($fields, $validator) = $settings;
-			unset($settings[0], $settings[1]);
-			
-			if(is_callable($validator)) {
-				$validator = new validator\Callback($validator);
-			}
-
-			if(!$validator instanceof Validator) {
-				$name = sprintf('\\DibiActiveRecord\\Validator\\%s', ucfirst($validator));
-				$validator = new $name;
-				$validator->setSettings($settings);
-			}
-
-			foreach(explode(',', $fields) as $field) {
-				$this->addValidator(trim($field), $validator);
-			}
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Adds new validator to the target column
-	 * @param string $column Column name to add validator to
-	 * @param Validator $validator Instance of validator
-	 */
-	public function addValidator($column, Validator $validator) {
-		$this->_validators[$column][$validator->getId()] = $validator;
-	}
-
-	/**
-	 * Validates model
-	 * @return boolean
-	 */
-	public function validate() {
-		$this->prepareValidators();
-		$this->errors = array();
-		$valid = true;
-
-		foreach($this->_validators as $field => $validators) {
-			$value = isset($this[$field]) ? $this[$field] : null;
-			foreach($validators as $validator) {
-				$validator->setValue($value);
-				if(!$validator->isValid()) {
-					$this->errors[$field] = array_merge(
-						isset($this->errors[$field]) ? $this->errors[$field] : array(),
-						str_replace('{name}', $field, $validator->getErrors())
-					);
-					$valid = false;
-				}
-			}
-		}
-
-		return $valid;
-	}
-
-	/**
-	 * List of errors made by validation
-	 * @return string[][]
-	 */
-	public function getErrors() {
-		return $this->errors;
-	}
-
-	/**
-	 * Gets table meta data for current active record
-	 * @return array
-	 */
-	public function getMetaData() {
-		$columns = array();
-		$defaults = array();
-
-		foreach($this->getConnection()->query('SHOW COLUMNS FROM %n', $this->tableName()) as $column) {
-			$columns[$column->Field] = $column->Field;
-			$defaults[$column->Field] = $column->Default == 'CURRENT_TIMESTAMP' ? date('Y-m-d H:i:s') : $column->Default;
-		}
-
-		return array(
-			'columns' => $columns,
-			'attributeDefaults' => $defaults,
-			'relations' => array(),
-		);
-	}
+    /**
+     * Method triggered after an active record is successfully deleted from the db
+     * @return void
+     */
+    public function afterDelete()
+    {
+    }
 }

@@ -17,7 +17,7 @@ Simply add a dependency on `tatarko/dibi-active-record` to your project's `compo
 ```json
 {
 	"require": {
-		"tatarko/dibi-active-record": "dev-master"
+		"tatarko/dibi-active-record": "^1.0"
 	}
 }
 ```

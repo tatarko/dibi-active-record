@@ -1,31 +1,30 @@
 {
 	"name": "tatarko/dibi-active-record",
 	"description": "Active Record built upon dibi Database Abstraction Library",
-	"version": "1.0.0",
 	"keywords": ["php", "dibi", "active", "record"],
-	"homepage": "http://www.codeforbetterlife.com",
+	"homepage": "https://github.com/tatarko/dibi-active-record",
 	"license": "MIT",
 	"authors": [
 		{
 			"name": "Tomas Tatarko",
-			"email": "tomas.tatarko@websupport.sk",
+			"email": "tomas@tatarko.sk",
 			"homepage": "http://tatarko.sk",
 			"role": "Developer"
 		}
 	],
 	"support": {
-		"email": "tomas.tatarko@websupport.sk",
+		"email": "tomas@tatarko.sk",
 		"issues": "https://github.com/tatarko/dibi-active-record/issues",
 		"wiki": "https://github.com/tatarko/dibi-active-record/wiki",
 		"source": "https://github.com/tatarko/dibi-active-record"
 	},
 	"require": {
 		"php": ">=5.3",
-		"dibi/dibi": "dev-master"
+		"dibi/dibi": "^2.0"
 	},
 	"autoload": {
 		"psr-4": {
-			"DibiActiveRecord\\": "source"
+			"Tatarko\\DibiActiveRecord\\": "source"
 		},
 		"files": [
 			"source/interfaces.php"

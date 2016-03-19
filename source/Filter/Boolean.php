@@ -1,44 +1,62 @@
 <?php
 
-namespace DibiActiveRecord\Filter;
+/**
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * PHP Version 5.3
+ *
+ * @category ORM
+ * @package  DibiActiveRecord
+ * @author   Tomáš Tatarko <tomas@tatarko.sk>
+ * @license  http://choosealicense.com/licenses/mit/ MIT
+ * @link     https://github.com/tatarko/dibi-active-record Official repository
+ */
 
-use DibiActiveRecord\Filter;
+namespace Tatarko\DibiActiveRecord\Filter;
+
+use Tatarko\DibiActiveRecord\Filter;
 
 /**
  * Forcing values to integer
  *
- * @author Tomas Tatarko <tomas.tatarko@websupport.sk>
- * @package DibiActiveRecord
+ * @category   ORM
+ * @package    DibiActiveRecord
  * @subpackage Filter
- * @copyright Copyright 2014 Tomas Tatarko
- * @license http://choosealicense.com/licenses/mit/ The MIT License
- * @version 1.0
- * @since 1.0
+ * @author     Tomas Tatarko <tomas@tatarko.sk>
+ * @copyright  2014 Tomas Tatarko
+ * @license    http://choosealicense.com/licenses/mit/ The MIT License
+ * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
 class Boolean implements Filter
 {
 
-	/**
-	 * Method called on setting variable to active record
-	 * @param mixed $value Input variable
-	 * @return string
-	 */
-	public function input($value) {
-		return (int)((boolean)$value);
-	}
+    /**
+     * Method called on setting variable to active record
+     * @param mixed $value Input variable
+     * @return string
+     */
+    public function input($value) 
+    {
+        return (int)((boolean)$value);
+    }
 
-	/**
-	 * Method called on getting variable from active record
-	 * @param string $value Field value
-	 * @return \DateTime
-	 */
-	public function output($value) {
-		return (boolean)$value;
-	}
+    /**
+     * Method called on getting variable from active record
+     * @param string $value Field value
+     * @return \DateTime
+     */
+    public function output($value) 
+    {
+        return (boolean)$value;
+    }
 
-	/**
-	 * Sets filter's internal setting according given variables
-	 * @param mixed[] $settings Filter's settings
-	 */
-	public function setSettings(array $settings) {}
+    /**
+     * Sets filter's internal setting according given variables
+     * @param mixed[] $settings Filter's settings
+     * @return void
+     */
+    public function setSettings(array $settings) 
+    {
+    }
 }
