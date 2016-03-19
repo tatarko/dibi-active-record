@@ -15,6 +15,8 @@
 
 namespace Tatarko\DibiActiveRecord\Validator;
 
+use Tatarko\DibiActiveRecord\ValidatorAbstract;
+
 /**
  * Force target fields to be filled to pass validator
  *
@@ -26,7 +28,7 @@ namespace Tatarko\DibiActiveRecord\Validator;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class Required extends AValidator
+class Required extends ValidatorAbstract
 {
 
     /**

@@ -15,6 +15,7 @@
 
 namespace Tatarko\DibiActiveRecord\Validator;
 
+use Tatarko\DibiActiveRecord\ValidatorAbstract;
 use Tatarko\DibiActiveRecord\Exception;
 
 /**
@@ -28,7 +29,7 @@ use Tatarko\DibiActiveRecord\Exception;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class Callback extends AValidator
+class Callback extends ValidatorAbstract
 {
 
     /**

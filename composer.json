@@ -25,9 +25,6 @@
 	"autoload": {
 		"psr-4": {
 			"Tatarko\\DibiActiveRecord\\": "source"
-		},
-		"files": [
-			"source/interfaces.php"
-		]
+		}
 	}
 }

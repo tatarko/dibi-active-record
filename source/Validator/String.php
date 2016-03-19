@@ -15,6 +15,8 @@
 
 namespace Tatarko\DibiActiveRecord\Validator;
 
+use Tatarko\DibiActiveRecord\ValidatorAbstract;
+
 /**
  * Checks if value is string
  *
@@ -26,7 +28,7 @@ namespace Tatarko\DibiActiveRecord\Validator;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class String extends AValidator
+class String extends ValidatorAbstract
 {
 
     /**

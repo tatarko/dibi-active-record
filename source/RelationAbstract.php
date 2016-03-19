@@ -13,11 +13,7 @@
  * @link     https://github.com/tatarko/dibi-active-record Official repository
  */
 
-namespace Tatarko\DibiActiveRecord\Relation;
-
-use Tatarko\DibiActiveRecord\Relation;
-use Tatarko\DibiActiveRecord\Exception;
-use Tatarko\DibiActiveRecord\Criteria;
+namespace Tatarko\DibiActiveRecord;
 
 /**
  * Relation for mapping objects
@@ -30,7 +26,7 @@ use Tatarko\DibiActiveRecord\Criteria;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-abstract class ARelation implements Relation
+abstract class RelationAbstract
 {
     /**
      * List of fields to group by
@@ -74,6 +70,14 @@ abstract class ARelation implements Relation
         $this->attribute = $attribute;
         $this->criteria = $criteria;
     }
+
+    /**
+     * Searching for relations
+     * @param ActiveView $model Base model for mapping
+     * @param array      $set   Set od records to search relations for
+     * @return void
+     */
+    abstract public function searchFor(ActiveView $model, array $set);
 
     /**
      * Gets relation name

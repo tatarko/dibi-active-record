@@ -15,6 +15,7 @@
 
 namespace Tatarko\DibiActiveRecord\Relation;
 
+use Tatarko\DibiActiveRecord\RelationAbstract;
 use Tatarko\DibiActiveRecord\ActiveView;
 use Tatarko\DibiActiveRecord\Criteria;
 
@@ -29,7 +30,7 @@ use Tatarko\DibiActiveRecord\Criteria;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class BelongsTo extends ARelation
+class BelongsTo extends RelationAbstract
 {
     /**
      * Search for relations

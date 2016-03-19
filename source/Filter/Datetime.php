@@ -17,7 +17,7 @@ namespace Tatarko\DibiActiveRecord\Filter;
 
 use DateTime;
 use DateTimeZone;
-use Tatarko\DibiActiveRecord\Filter;
+use Tatarko\DibiActiveRecord\FilterInterface;
 
 /**
  * Manipulating with data as php's DateTime object
@@ -30,7 +30,7 @@ use Tatarko\DibiActiveRecord\Filter;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class Datetime implements Filter
+class Datetime implements FilterInterface
 {
 
     /**

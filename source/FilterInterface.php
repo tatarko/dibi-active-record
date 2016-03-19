@@ -13,50 +13,38 @@
  * @link     https://github.com/tatarko/dibi-active-record Official repository
  */
 
-namespace Tatarko\DibiActiveRecord\Filter;
-
-use Tatarko\DibiActiveRecord\FilterInterface;
+namespace Tatarko\DibiActiveRecord;
 
 /**
- * Forcing values to float
+ * Filter for getting/setting properties
  *
- * @category   ORM
- * @package    DibiActiveRecord
- * @subpackage Filter
- * @author     Tomas Tatarko <tomas@tatarko.sk>
- * @copyright  2014 Tomas Tatarko
- * @license    http://choosealicense.com/licenses/mit/ The MIT License
- * @link       https://github.com/tatarko/dibi-active-record Official repository
+ * @category  ORM
+ * @package   DibiActiveRecord
+ * @author    Tomas Tatarko <tomas@tatarko.sk>
+ * @copyright 2014 Tomas Tatarko
+ * @license   http://choosealicense.com/licenses/mit/ The MIT License
+ * @link      https://github.com/tatarko/dibi-active-record Official repository
  */
-class Float implements FilterInterface
+interface FilterInterface
 {
-
     /**
      * Method called on setting variable to active record
      * @param mixed $value Input variable
      * @return string
      */
-    public function input($value) 
-    {
-        return (float)$value;
-    }
+    public function input($value);
 
     /**
      * Method called on getting variable from active record
      * @param string $value Field value
-     * @return \DateTime
+     * @return mixed
      */
-    public function output($value) 
-    {
-        return (float)$value;
-    }
+    public function output($value);
 
     /**
      * Sets filter's internal setting according given variables
      * @param mixed[] $settings Filter's settings
      * @return void
      */
-    public function setSettings(array $settings) 
-    {
-    }
+    public function setSettings(array $settings);
 }

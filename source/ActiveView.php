@@ -17,8 +17,6 @@ namespace Tatarko\DibiActiveRecord;
 
 use ArrayObject;
 
-require_once __DIR__ . '/interfaces.php';
-
 /**
  * ActiveView built above dibi for querying views
  *
@@ -45,7 +43,7 @@ abstract class ActiveView extends ArrayObject
 
     /**
      * Stack of filters to use on setting/getting values
-     * @var Filter[]
+     * @var FilterInterface[]
      */
     private $_filters;
 
@@ -331,7 +329,7 @@ abstract class ActiveView extends ArrayObject
             list($fields, $filter) = $settings;
             unset($settings[0], $settings[1]);
 
-            if (!$filter instanceof Filter) {
+            if (!$filter instanceof FilterInterface) {
                 $name = sprintf(__NAMESPACE__.'\\Filter\\%s', ucfirst($filter));
                 $filter = new $name;
                 $filter->setSettings($settings);
@@ -347,18 +345,18 @@ abstract class ActiveView extends ArrayObject
 
     /**
      * Sets filter to requested column
-     * @param string $column Column name to set filter on
-     * @param Filter $filter Instance of filter
+     * @param string          $column Column name to set filter on
+     * @param FilterInterface $filter Instance of filter
      * @return void
      */
-    public function setFilter($column, Filter $filter) 
+    public function setFilter($column, FilterInterface $filter) 
     {
         $this->_filters[$column] = $filter;
     }
 
     /**
      * Gets list of object's relations
-     * @return Relation[]
+     * @return RelationAbstract[]
      */
     public function relations()
     {

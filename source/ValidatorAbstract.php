@@ -13,12 +13,10 @@
  * @link     https://github.com/tatarko/dibi-active-record Official repository
  */
 
-namespace Tatarko\DibiActiveRecord\Validator;
+namespace Tatarko\DibiActiveRecord;
 
 use ReflectionClass;
 use ReflectionProperty;
-use Tatarko\DibiActiveRecord\Validator;
-use Tatarko\DibiActiveRecord\Exception;
 
 /**
  * Abstract Validator
@@ -31,7 +29,7 @@ use Tatarko\DibiActiveRecord\Exception;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-abstract class AValidator implements Validator
+abstract class ValidatorAbstract
 {
     /**
      * Allow value to not exists or to be null

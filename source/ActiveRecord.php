@@ -15,7 +15,7 @@
 
 namespace Tatarko\DibiActiveRecord;
 
-require_once __DIR__ . '/interfaces.php';
+use Tatarko\DibiActiveRecord\Validator\Callback;
 
 /**
  * ActiveRecord built above dibi
@@ -154,7 +154,7 @@ abstract class ActiveRecord extends ActiveView
 
     /**
      * Builds filter instances from meta data returned from `validators()` method
-     * @return Validator[]
+     * @return ValidatorAbstract[]
      */
     protected function prepareValidators()
     {
@@ -165,10 +165,10 @@ abstract class ActiveRecord extends ActiveView
             unset($settings[0], $settings[1]);
 
             if (is_callable($validator)) {
-                $validator = new validator\Callback($validator);
+                $validator = new Callback($validator);
             }
 
-            if (!$validator instanceof Validator) {
+            if (!$validator instanceof ValidatorAbstract) {
                 $name = sprintf(
                     __NAMESPACE__.'\\Validator\\%s',
                     ucfirst($validator)

@@ -15,7 +15,7 @@
 
 namespace Tatarko\DibiActiveRecord\Filter;
 
-use Tatarko\DibiActiveRecord\Filter;
+use Tatarko\DibiActiveRecord\FilterInterface;
 
 /**
  * Storing extended data as JSON
@@ -28,7 +28,7 @@ use Tatarko\DibiActiveRecord\Filter;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class Json implements Filter
+class Json implements FilterInterface
 {
 
     /**
