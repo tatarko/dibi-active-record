@@ -99,8 +99,263 @@ $model = new User();
 var_dump($model->isNewRecord()); // true
 
 $other = User::model()->findByPk(2);
-var_dump($model->isNewRecord()); // false
+var_dump($other->isNewRecord()); // false
 
 $other->refresh(); // fetch current field values from db
 ```
 
+### Searching for rows
+
+```php
+// Getting first row that matches criteria
+$model = User::model()->find();
+
+// Specifying criteria for model searching
+$model = User::model();
+$criteria = $model->getCriteria()->search('name', 'dibi'); // search means `LIKE "%dibi%"
+foreach($model->findAll() as $record) {
+	var_dump($record);
+}
+```
+
+### More searching criteria
+
+#### Available methods
+
+- `$criteria->limit(integer $limit)`
+	- limits number of rows to fetch
+- `$criteria->offset(integer $offset)`
+	- sets numbers of rows to skip on fetching
+- `$criteria->select(string ...$fields)`
+	- which fields to fetch
+
+Following methods can be called more multiple times - their effect is combined:
+
+- `$criteria->orderBy(string $sorter)`
+	- how to order results
+- `$criteria->groupBy(string $field)`
+	- according to which columns should be results grouped
+- `$criteria->rightJoin(string $table, array $on = array(), string $name = null)`
+	- joins table `$table` by conditions from `$on` with type of `RIGHT JOIN`.
+	- in case that `$name` is specified then additional table is joined under this local name
+	- List `$on` can be filled with strings of partial conditions or arrays containing following elements:
+		- string `rule` *(required)* - condition pattern
+		- array `params` *(optional)* - parameters of that condition (in case that condition has placeholders such as `%i`, `%s` etc)
+		0 string `opetator` *(optional)* - operator to be used before current condition (if it is not the first), `AND` by default
+- `$criteria->leftJoin(string $table, array $on = array(), string $name = null)`
+	- joins table `$table` by conditions from `$on` with type of `LEFT JOIN`.
+	- in case that `$name` is specified then additional table is joined under this local name
+	- List `$on` can be filled with strings of partial conditions or arrays containing following elements:
+		- string `rule` *(required)* - condition pattern
+		- array `params` *(optional)* - parameters of that condition (in case that condition has placeholders such as `%i`, `%s` etc)
+		0 string `opetator` *(optional)* - operator to be used before current condition (if it is not the first), `AND` by default
+- `$criteria->mergeWith($criteria)`
+	- merges current criteria with another one
+	- `$criteria` can be instance of `Tatarko\DibiActiveRecord\Criteria` or array of values for building `Tatarko\DibiActiveRecord\Criteria`
+- `$criteria->where(string $rule, array $params = array(), string $opeator = 'AND')`
+	- adds new condition to `WHERE` statement
+	- $params represents parameters for that condition (in case that condition has placeholders such as  `%i`, `%s` etc)
+	- $operator operator to be used before current condition (if it is not the first), `AND` by default
+- `$criteria->having(string $rule, array $params = array(), string $opeator = 'AND')`
+	- adds new condition to `HAVING` statement
+	- $params represents parameters for that condition (in case that condition has placeholders such as  `%i`, `%s` etc)
+	- $operator operator to be used before current condition (if it is not the first), `AND` by default
+
+Following methods creates specified case of condtions. Argument `$onHaving` decides whether condition will be added to the `WHERE` statement (on `false` value) or to the `HAVING` statement (on `true` value). Argument `$operator` represents operator to be used before current condition (if it is not the first), `AND` by default. All the methods can be called multiple times with their effect to be combined.
+
+- `$criteria->compare(string $column, string $value, boolean $onHaving = false, string $opeator = 'AND')`
+	- Value in column `$column` has to equal to `$value`
+- `$criteria->search(string $column, string $value, boolean $onHaving = false, string $opeator = 'AND')`
+	- Column `$column` will sarched for `$value` using `LIKE`
+- `$criteria->between(string $column, float $start, float $end, boolean $onHaving = false, string $opeator = 'AND')`
+	- Value of the `$column` has to be from interval `< $start; $end >`
+- `$criteria->in(string $column, array $values, boolean $onHaving = false, string $opeator = 'AND')`
+	- Column `$column` has to equal to at least one of `$values`
+- `$criteria->notIn(string $column, array $values, boolean $onHaving = false, string $opeator = 'AND')`
+	- Column `$column` must not equal to any value from `$values`
+- `$criteria->lessThan(string $column, float $value, boolean $onHaving = false, string $opeator = 'AND')`
+	- Value of `$column` has to be lower than `$value`
+- `$criteria->lessOrEqualThan(string $column, float $value, boolean $onHaving = false, string $opeator = 'AND')`
+	- Value of `$column` has to be lower than or equals to `$value`
+- `$criteria->moreThan(string $column, float $value, boolean $onHaving = false, string $opeator = 'AND')`
+	- Value of `$column` has to be higher than `$value`
+- `$criteria->moreOrEqualThan(string $column, float $value, boolean $onHaving = false, string $opeator = 'AND')`
+	- Value of `$column` has to be higher than or equals to `$value`
+
+### Filters
+
+Filters for Dibi Active Record is something like dynamic setter/getter for model's attribute. It can be defined by overriding `filters()` method.
+
+```php
+use Tatarko\DibiActiveRecord\ActiveRecord;
+
+/**
+ * @property integer $id
+ * @property DateTime $created
+ * @property DateTime $updated
+ * @property array $jsonData
+ */
+class User extends ActiveRecord
+{
+    public function filters()
+    {
+        return array(
+            array('jsonData', 'json'), // field will be on-the-fly encoded/decoded as json
+            array('createTime,updateTime', 'datetime'), // mysql timestamp field - will be interpreted as DateTime object
+        );
+    }
+}
+```
+
+Filters can used when getting model's attributes as object properties. If attributes are accessed as array elements then value is returned in its raw format.
+
+```php
+$model = User::model()->find();
+var_dump(
+    $model->jsonData, // array('index' => 'value');
+    $model['jsonData'] // string '{"index":"value"}'
+);
+```
+
+#### List of pre-defined filters
+
+- `boolean` - value is interpreted as boolean and stored as 0/1 in database
+- `datetime` - value is interpreted as `DateTime` object and stored as date/time in database
+- `float` - value is interpreted as float
+- `integer` - value is interpreted as integer
+- `json` - field will be on-the-fly encoded/decoded as json
+
+#### Custom filters
+
+New filter can be created by implementing `Tatarko\DibiActiveRecord\FilterInterface` interface and defiying it `filters()` method.
+
+```php
+use Tatarko\DibiActiveRecord\FilterInterface;
+use Tatarko\DibiActiveRecord\ActiveRecord;
+
+class MyCustomFilter implementes FilterInterface
+{
+	// interface implementation
+}
+
+/**
+ * @property integer $id
+ * @property mixed $specialField
+ */
+class User extends ActiveRecord
+{
+    public function filters()
+    {
+        return array(
+            array('specialField', new MyCustomFilter()),
+        );
+    }
+}
+```
+
+### Validators
+
+For validating model's attributes before inserting/updating to the database it is possible to set of validation rules to be performing before each saving operation. It can be achieved by overriding `validators()` method.
+
+```php
+use Tatarko\DibiActiveRecord\ActiveRecord;
+
+/**
+ * @property integer $id
+ * @property string $name
+ * @property string $group
+ */
+class User extends ActiveRecord
+{
+    public function validators()
+    {
+        return array(
+            array('name,group', 'string'),
+            array('group', 'in', 'haystack' => array('visitor', 'admin')),
+            array('name', function($validator) {
+            	// callback validator
+            	// value to validate can be accessed by $validator->getValue()
+            	// and store error in case of invalid value using:
+				$validator->addError('Invalid name: '.$validator->getValue());
+            }),
+        );
+    }
+}
+```
+
+#### List of pre-defined validators
+
+- `callback`
+	- checks the value with given callback function
+	- must to have parameter `callback` that must to be callable type
+	- can have parameter `allowEmpty` which decides whether empty value is valid, `true` by default
+- `in`
+	- value musts equal to at least one of values in `haystack` that is required parameter
+	- if `haystack` is array, then `in_array` is used, `mb_strpos` otherwise
+	- can have parameter `allowEmpty` which decides whether empty value is valid, `true` by default
+- `numeric`
+	- checks for numeric type of value
+	- can have parameter `allowEmpty` which decides whether empty value is valid, `true` by default
+- `required`
+	- checks for non-empty value
+- `string`
+	- checks for string type of value
+	- can have parameter `minLength` - minimal string length
+	- can have parameter `maxLength` - maximal string length
+	- can have parameter `allowEmpty` which decides whether empty value is valid, `true` by default
+
+#### Validation in action
+
+```php
+$model = new User();
+$model->name = 'Some name';
+$model->group = 'admin';
+
+var_dump(
+	$model->validate(), // false
+	$model->getError(), // array('name => array('Invalid name: Some name'))
+);
+```
+
+Validation is automatically triggered on model saving. In case that model is not valid, saving process is stopped. Validation can be skipped by filling `$validate` argument - `$model->save(false)`
+
+#### Custom validators
+
+New validator can be created by creating new class that extends `Tatarko\DibiActiveRecord\ValidatorAbstract`.
+```php
+use Tatarko\DibiActiveRecord\ValidatorAbstract;
+use Tatarko\DibiActiveRecord\ActiveRecord;
+
+class MyCustomValidator extends ValidatorAbstract
+{
+	// abstract methods implementation
+}
+
+/**
+ * @property integer $id
+ * @property mixed $specialField
+ */
+class User extends ActiveRecord
+{
+    public function filters()
+    {
+        return array(
+            array('specialField', new MyCustomValidator()),
+        );
+    }
+}
+```
+
+### Events
+In every model you can override following methods that will be triggered on specific occasions. In case of  before... events, the process itself can be stopped if event method returns `false`.
+
+- `beforeValidate` is called before model validation
+- `afterValidate` is called after performing model validation
+- `beforeSave` is called before saving model to the DB
+- `afterSave` is called as soon as model is successfully saved to the DB
+- `beforeDelete` is called before model is deleted from DB
+- `afterDelete` is called as soon as model is successfully deleted from the DB
+
+### ActiveFinder
+
+Class `ActiveFinder` (which is ancestor for `ActiveRecord`) is used for working with DB views. It shares common logic with `ActiveRecord` except of saving/deleting rows, validating and events.
