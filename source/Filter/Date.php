@@ -30,7 +30,7 @@ use Tatarko\DibiActiveRecord\FilterInterface;
  * @license    http://choosealicense.com/licenses/mit/ The MIT License
  * @link       https://github.com/tatarko/dibi-active-record Official repository
  */
-class Datetime implements FilterInterface
+class Date implements FilterInterface
 {
 
     /**

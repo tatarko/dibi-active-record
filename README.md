@@ -199,7 +199,7 @@ class User extends ActiveRecord
     {
         return array(
             array('jsonData', 'json'), // field will be on-the-fly encoded/decoded as json
-            array('createTime,updateTime', 'datetime'), // mysql timestamp field - will be interpreted as DateTime object
+            array('createTime,updateTime', 'date'), // mysql timestamp field - will be interpreted as DateTime object
         );
     }
 }
@@ -218,7 +218,7 @@ var_dump(
 #### List of pre-defined filters
 
 - `boolean` - value is interpreted as boolean and stored as 0/1 in database
-- `datetime` - value is interpreted as `DateTime` object and stored as date/time in database
+- `date` - value is interpreted as `DateTime` object and stored as date/time in database
 - `float` - value is interpreted as float
 - `integer` - value is interpreted as integer
 - `json` - field will be on-the-fly encoded/decoded as json
