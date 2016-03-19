@@ -320,6 +320,7 @@ Validation is automatically triggered on model saving. In case that model is not
 #### Custom validators
 
 New validator can be created by creating new class that extends `Tatarko\DibiActiveRecord\ValidatorAbstract`.
+
 ```php
 use Tatarko\DibiActiveRecord\ValidatorAbstract;
 use Tatarko\DibiActiveRecord\ActiveRecord;
@@ -342,6 +343,56 @@ class User extends ActiveRecord
         );
     }
 }
+```
+
+### Relations
+
+In case that multiple tables are connected using foreign keys, thier records records can be mapped in Dibi Active Record as properties. Relations can be defined in `relations()` method.
+
+
+```php
+use Tatarko\DibiActiveRecord\ActiveRecord;
+
+/**
+ * @property integer $id
+ * @property string $name
+ * @property Service[] $services
+ */
+class User extends ActiveRecord
+{
+    public function relations()
+    {
+        return array(
+        	'services' => array(self::HAS_MANY, 'Service', 'user_id'),
+        );
+    }
+}
+
+/**
+ * @property integer $id
+ * @property integer $user_id
+ * @property string $name
+ * @property User $owner
+ */
+class User extends ActiveRecord
+{
+    public function relations()
+    {
+        return array(
+        	'owner' => array(self::BELONGS_TO, 'User', 'user_id'),
+        );
+    }
+}
+```
+
+foreach(User::model()->findAll() as $model) {
+	foreach($model->services as $service) {
+		echo "User {$model->name} has service {$service->name}\n";
+	}
+}
+
+$service = Service::model()->findByPk(123);
+echo "Onwer of {$service->name} service is {$service->owner->name}\n";
 ```
 
 ### Events
