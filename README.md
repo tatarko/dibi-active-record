@@ -2,6 +2,9 @@
 
 Active Record built upon [dibi](https://github.com/dg/dibi) Database Abstraction Library.
 
+[![Latest Stable Version](https://poser.pugx.org/tatarko/dibi-active-record/v/stable.png)](https://packagist.org/packages/tatarko/dibi-active-record)
+[![Code Climate](https://codeclimate.com/github/tatarko/dibi-active-record/badges/gpa.png)](https://codeclimate.com/github/tatarko/dibi-active-record)
+
 ## Requirements
 
 `DibiActiveRecord` requires to run correctly:
