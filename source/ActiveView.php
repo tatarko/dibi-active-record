@@ -16,6 +16,7 @@
 namespace Tatarko\DibiActiveRecord;
 
 use ArrayObject;
+use dibi;
 
 /**
  * ActiveView built above dibi for querying views
@@ -29,11 +30,8 @@ use ArrayObject;
  */
 abstract class ActiveView extends ArrayObject
 {
-    /**
-     * Name of the active dibi connection
-     * @var string
-     */
-    protected $connection;
+    const HAS_MANY = 'Tatarko\\DibiActiveRecord\\Relation\\HasMany';
+    const BELONGS_TO = 'Tatarko\\DibiActiveRecord\\Relation\\BelongsTo';
 
     /**
      * Criteria for selecting records from database
@@ -103,7 +101,7 @@ abstract class ActiveView extends ArrayObject
      */
     public function getConnection()
     {
-        return \dibi::getConnection($this->connection);
+        return \dibi::getConnection();
     }
 
     /**
@@ -136,24 +134,20 @@ abstract class ActiveView extends ArrayObject
     protected function requestData(Criteria $criteria = null)
     {
         $mergedCriteria = $criteria ?: $this->getCriteria();
-        $result = call_user_func_array(
-            array(
-            $this->getConnection(),
-            'query'
-            ),
+        $result = $this->getConnection()->query(
             $mergedCriteria->build($this->tableName())
         )->setRowClass(get_called_class());
-        
+
         $relations = $mergedCriteria->getRelationList();
-        if (empty($relations)) {
+        if (empty($relations) || !count($result)) {
             return $result;
         }
 
         $data = $result->fetchAll();
-        foreach ($this->relations() as $relation) {
-            if (in_array($relation->getName(), $relations)) {
-                $relation->searchFor($this, $data);
-                unset($relations[array_search($relation->getName(), $relations)]);
+        foreach ($this->relations() as $name => $meta) {
+            if (in_array($name, $relations)) {
+                $this->makeRelation($name, $meta)->searchFor($data, $name);
+                unset($relations[array_search($name, $relations)]);
             }
         }
 
@@ -271,9 +265,11 @@ abstract class ActiveView extends ArrayObject
 
         $this->prepareFilters();
         if (!$this->offsetExists($name)) {
-            foreach ($this->relations() as $rel) {
-                if ($rel->getName() == $name) {
-                    return $this->getRelatedRecord($name);                    
+            foreach ($this->relations() as $relationName => $meta) {
+                if ($relationName == $name) {
+                    $this->makeRelation($relationName, $meta)
+                        ->searchFor(array($this), $relationName);
+                    return $this->_related[$name];
                 }
             }
         }
@@ -364,28 +360,6 @@ abstract class ActiveView extends ArrayObject
     }
 
     /**
-     * Gets related object by its name
-     * @param string $name Gets record(s) related by definition of `relations()`
-     * @return ActiveView
-     * @throws Exception
-     */
-    public function getRelatedRecord($name)
-    {
-        if (key_exists($name, $this->_related)) {
-            return $this->_related;
-        }
-
-        foreach ($this->relations() as $relation) {
-            if ($relation->getName() == $name) {
-                $relation->searchFor($this, array($this));
-                return $this->_related[$name];
-            }
-        }
-
-        throw new Exception('Relation "' . $name . '" not found', 0);
-    }
-
-    /**
      * Sets related object by its name
      * @param string     $name     Relation name to set record
      * @param ActiveView $record   Record model to set
@@ -435,11 +409,28 @@ abstract class ActiveView extends ArrayObject
         return self::$_tableMetaData[$this->tableName()] = array(
         'columns' => $columns,
         'attributeDefaults' => $defaults,
-        'relations' => array_map(
-            function ($relation) {
-                return $relation->getName();
-            }, $this->relations()
-        ),
+        'relations' => array_keys($this->relations()),
         );
+    }
+
+    /**
+     * Makes instance of relation from its meta data
+     * @param type  $name Relation name
+     * @param array $meta Relation meta data
+     * @return RelationAbstract
+     * @throws Exception
+     */
+    protected function makeRelation($name, array $meta) 
+    {
+        if (!in_array(count($meta), array(3, 4))) {
+            throw new Exception('Wrong parameter count for relation definition');
+        }
+
+        list($type, $table, $field, $criteria) = $meta + array(3 => null);
+        if (!class_exists($type)) {
+            throw new Exception("'{$type}' relation type does not exists");
+        }
+
+        return new $type($name, $table, $field, $criteria);
     }
 }

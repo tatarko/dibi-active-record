@@ -29,13 +29,7 @@ namespace Tatarko\DibiActiveRecord;
 abstract class RelationAbstract
 {
     /**
-     * List of fields to group by
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * List of fields to group by
+     * Model name of related table
      * @var string
      */
     protected $model;
@@ -54,18 +48,12 @@ abstract class RelationAbstract
 
     /**
      * Constructing new relation instance
-     * @param string   $name      Relation name
      * @param string   $model     Relation's target model
      * @param string   $attribute Target's table attribute name
      * @param Criteria $criteria  Additional criteria
      */
-    public function __construct(
-        $name,
-        $model,
-        $attribute,
-        Criteria $criteria = null
-    ) {
-        $this->name = $name;
+    public function __construct($model, $attribute, Criteria $criteria = null)
+    {
         $this->model = $model;
         $this->attribute = $attribute;
         $this->criteria = $criteria;
@@ -73,20 +61,11 @@ abstract class RelationAbstract
 
     /**
      * Searching for relations
-     * @param ActiveView $model Base model for mapping
-     * @param array      $set   Set od records to search relations for
+     * @param ActiveView[] $set  Set od records to search relations for
+     * @param string       $name Relation name to set matched records to
      * @return void
      */
-    abstract public function searchFor(ActiveView $model, array $set);
-
-    /**
-     * Gets relation name
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
+    abstract public function searchFor(array $set, $name);
 
     /**
      * Gets instance of model by name

@@ -34,11 +34,11 @@ class BelongsTo extends RelationAbstract
 {
     /**
      * Search for relations
-     * @param ActiveView   $model Source model (for meta data)
-     * @param ActiveView[] $set   Current data set
+     * @param ActiveView[] $set  Set od records to search relations for
+     * @param string       $name Relation name to set matched records to
      * @return void
      */
-    public function searchFor(ActiveView $model, array $set) 
+    public function searchFor(array $set, $name) 
     {
         $ids = array();
         foreach ($set as $i => $record) {
@@ -53,7 +53,7 @@ class BelongsTo extends RelationAbstract
         }
 
         foreach ($sample->findAll() as $r) {
-            $set[$ids[$r[$this->attribute]]]->setRelatedRecord($this->name, $r);
+            $set[$ids[$r[$this->attribute]]]->setRelatedRecord($name, $r);
         }
     }
 }
