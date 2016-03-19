@@ -14,7 +14,7 @@ Active Record built upon [dibi](https://github.com/dg/dibi) Database Abstraction
 
 Simply add a dependency on `tatarko/dibi-active-record` to your project's `composer.json` file if you use [Composer](http://getcomposer.org) to manage the dependencies of your project. Here is a minimal example of a `composer.json` file that just defines a dependency on Dibi Active Record:
 
-```
+```json
 {
 	"require": {
 		"tatarko/dibi-active-record": "^1.0"
@@ -28,7 +28,7 @@ To use dibi active record you simply define model's class that extends common pa
 
 ### Definying model's class
 
-```
+```php
 use Tatarko\DibiActiveRecord\ActiveRecord;
 
 /**
@@ -45,7 +45,7 @@ class User extends ActiveRecord
 
 After we successfully define our first model, we can work with it in common way used in active record/orm pattern.
 
-```
+```php
 $model = new User();
 $model->name = 'demo';
 
@@ -70,7 +70,7 @@ foreach(User::model()->findAll() as $model) {
 
 By default, name of the active record's table equals to class name without namespace prefix and primary key name equals to `id`. In case that you want to change it, you can override `tableName()` and `primaryKeyName()` methods:
 
-```
+```php
 use Tatarko\DibiActiveRecord\ActiveRecord;
 
 /**
@@ -94,7 +94,7 @@ class User extends ActiveRecord
 
 ### Usefull methods
 
-```
+```php
 $model = new User();
 var_dump($model->isNewRecord()); // true
 
