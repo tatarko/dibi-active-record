@@ -43,7 +43,7 @@ class User extends ActiveRecord
 
 ### Basic manipulation with model
 
-After we successfully define our first model, we can work with it in common way used in active record/orm pattern.
+After we have successfully defined our first model, we can work with it in common way used in active record/orm patterns.
 
 ```php
 $model = new User();
@@ -120,8 +120,6 @@ foreach($model->findAll() as $record) {
 
 ### More searching criteria
 
-#### Available methods
-
 - `$criteria->limit(integer $limit)`
 	- limits number of rows to fetch
 - `$criteria->offset(integer $offset)`
@@ -141,32 +139,32 @@ Following methods can be called more multiple times - their effect is combined:
 	- List `$on` can be filled with strings of partial conditions or arrays containing following elements:
 		- string `rule` *(required)* - condition pattern
 		- array `params` *(optional)* - parameters of that condition (in case that condition has placeholders such as `%i`, `%s` etc)
-		0 string `opetator` *(optional)* - operator to be used before current condition (if it is not the first), `AND` by default
+		- string `opetator` *(optional)* - operator to be used before current condition (if it is not the first), `AND` by default
 - `$criteria->leftJoin(string $table, array $on = array(), string $name = null)`
 	- joins table `$table` by conditions from `$on` with type of `LEFT JOIN`.
 	- in case that `$name` is specified then additional table is joined under this local name
 	- List `$on` can be filled with strings of partial conditions or arrays containing following elements:
 		- string `rule` *(required)* - condition pattern
 		- array `params` *(optional)* - parameters of that condition (in case that condition has placeholders such as `%i`, `%s` etc)
-		0 string `opetator` *(optional)* - operator to be used before current condition (if it is not the first), `AND` by default
+		- string `opetator` *(optional)* - operator to be used before current condition (if it is not the first), `AND` by default
 - `$criteria->mergeWith($criteria)`
 	- merges current criteria with another one
 	- `$criteria` can be instance of `Tatarko\DibiActiveRecord\Criteria` or array of values for building `Tatarko\DibiActiveRecord\Criteria`
 - `$criteria->where(string $rule, array $params = array(), string $opeator = 'AND')`
 	- adds new condition to `WHERE` statement
-	- $params represents parameters for that condition (in case that condition has placeholders such as  `%i`, `%s` etc)
-	- $operator operator to be used before current condition (if it is not the first), `AND` by default
+	- `$params` represents parameters for that condition (in case that condition has placeholders such as  `%i`, `%s` etc)
+	- `$operator` operator to be used before current condition (if it is not the first), `AND` by default
 - `$criteria->having(string $rule, array $params = array(), string $opeator = 'AND')`
 	- adds new condition to `HAVING` statement
-	- $params represents parameters for that condition (in case that condition has placeholders such as  `%i`, `%s` etc)
-	- $operator operator to be used before current condition (if it is not the first), `AND` by default
+	- `$params` represents parameters for that condition (in case that condition has placeholders such as  `%i`, `%s` etc)
+	- `$operator` operator to be used before current condition (if it is not the first), `AND` by default
 
 Following methods creates specified case of condtions. Argument `$onHaving` decides whether condition will be added to the `WHERE` statement (on `false` value) or to the `HAVING` statement (on `true` value). Argument `$operator` represents operator to be used before current condition (if it is not the first), `AND` by default. All the methods can be called multiple times with their effect to be combined.
 
 - `$criteria->compare(string $column, string $value, boolean $onHaving = false, string $opeator = 'AND')`
 	- Value in column `$column` has to equal to `$value`
 - `$criteria->search(string $column, string $value, boolean $onHaving = false, string $opeator = 'AND')`
-	- Column `$column` will sarched for `$value` using `LIKE`
+	- Column `$column` will searched for `$value` using `LIKE`
 - `$criteria->between(string $column, float $start, float $end, boolean $onHaving = false, string $opeator = 'AND')`
 	- Value of the `$column` has to be from interval `< $start; $end >`
 - `$criteria->in(string $column, array $values, boolean $onHaving = false, string $opeator = 'AND')`
