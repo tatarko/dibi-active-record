@@ -95,10 +95,9 @@ abstract class RelationAbstract
      */
     protected function getInstanceOf($model)
     {
-        $className = '\\models\\' . $model;
-        if (!class_exists($className)) {
+        if (!class_exists($model)) {
             throw new Exception('Relation model "'.$model.'" does not exist');
         }
-        return new $className();
+        return new $model();
     }
 }
