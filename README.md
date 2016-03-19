@@ -385,6 +385,9 @@ class User extends ActiveRecord
 }
 ```
 
+After definying relations we can use them as model's properties.
+
+```php
 foreach(User::model()->findAll() as $model) {
 	foreach($model->services as $service) {
 		echo "User {$model->name} has service {$service->name}\n";
