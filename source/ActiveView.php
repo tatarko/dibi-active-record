@@ -331,7 +331,7 @@ abstract class ActiveView extends ArrayObject
                 $filter->setSettings($settings);
             }
 
-            foreach (explode(',', $fields) as $field) {
+            foreach (preg_split('#[\s,]+#', trim($fields)) as $field) {
                 $this->setFilter(trim($field), $filter);
             }
         }

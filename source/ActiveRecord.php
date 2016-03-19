@@ -177,7 +177,7 @@ abstract class ActiveRecord extends ActiveView
                 $validator->setSettings($settings);
             }
 
-            foreach (explode(',', $fields) as $field) {
+            foreach (preg_split('#[\s,]+#', trim($fields)) as $field) {
                 $validators[trim($field)][$validator->getId()] = $validator;
             }
         }
