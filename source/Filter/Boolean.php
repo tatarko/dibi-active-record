@@ -44,7 +44,7 @@ class Boolean implements FilterInterface
     /**
      * Method called on getting variable from active record
      * @param string $value Field value
-     * @return \DateTime
+     * @return boolean
      */
     public function output($value) 
     {

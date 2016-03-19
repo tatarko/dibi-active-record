@@ -101,7 +101,7 @@ abstract class ActiveView extends ArrayObject
      */
     public function getConnection()
     {
-        return \dibi::getConnection();
+        return dibi::getConnection();
     }
 
     /**

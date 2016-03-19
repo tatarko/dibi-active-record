@@ -44,7 +44,7 @@ class Float implements FilterInterface
     /**
      * Method called on getting variable from active record
      * @param string $value Field value
-     * @return \DateTime
+     * @return float
      */
     public function output($value) 
     {

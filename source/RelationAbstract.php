@@ -70,7 +70,7 @@ abstract class RelationAbstract
     /**
      * Gets instance of model by name
      * @param string $model Name of the model to make
-     * @return \Tatarko\DibiActiveRecord\ActiveView
+     * @return ActiveView
      */
     protected function getInstanceOf($model)
     {

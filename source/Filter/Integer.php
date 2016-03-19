@@ -44,7 +44,7 @@ class Integer implements FilterInterface
     /**
      * Method called on getting variable from active record
      * @param string $value Field value
-     * @return \DateTime
+     * @return integer
      */
     public function output($value) 
     {

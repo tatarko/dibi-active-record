@@ -15,6 +15,8 @@
 
 namespace Tatarko\DibiActiveRecord;
 
+use ReflectionClass;
+
 /**
  * Criteria for selecting rows
  *
@@ -437,7 +439,7 @@ class Criteria
             throw new Exception('Not valid criteria to merge');
         }
 
-        $class = new \ReflectionClass($this);
+        $class = new ReflectionClass($this);
         foreach ($class->getProperties() as $property) {
             $name = $property->name;
             $property->setAccessible(true);
@@ -459,12 +461,11 @@ class Criteria
      * Create instance of criteria by given array of properties
      * @param array $criteria List of properties to set on criteria's instance
      * @return Criteria
-     * @throws \ReflectionException
      */
     public static function create(array $criteria) 
     {
         $instance = new self;
-        $reflection = new \ReflectionClass($instance);
+        $reflection = new ReflectionClass($instance);
 
         foreach ($criteria as $name => $param) {
 
@@ -490,7 +491,7 @@ class Criteria
     protected static function castConditionsList(array $conditions) 
     {
         $pattern = new Condition('');
-        $class = new \ReflectionClass($pattern);
+        $class = new ReflectionClass($pattern);
         $reflections = array();
 
         foreach ($conditions as $index => $properties) {
@@ -517,7 +518,7 @@ class Criteria
     protected static function castJoinsList(array $joins) 
     {
         $pattern = new Join('');
-        $class = new \ReflectionClass($pattern);
+        $class = new ReflectionClass($pattern);
         $reflections = array();
 
         foreach ($joins as $index => $properties) {
