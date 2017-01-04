@@ -431,6 +431,6 @@ abstract class ActiveView extends ArrayObject
             throw new Exception("'{$type}' relation type does not exists");
         }
 
-        return new $type($name, $table, $field, $criteria);
+        return new $type($table, $field, $criteria);
     }
 }
